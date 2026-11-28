@@ -19,6 +19,15 @@ realAgenda def = do
 
 spec :: Spec
 spec = describe "Investigator.Runner" do
+  it "auto-assigns damage and horror when the investigator is the only legal recipient" . gameTest $ \self -> do
+    run $ InvestigatorAssignDamage self.id (TestSource mempty) DamageAny 1 0
+    self.damage `shouldReturn` 1
+    (length . gameQuestion <$> getGame) `shouldReturn` 0
+
+    run $ InvestigatorAssignDamage self.id (TestSource mempty) DamageAny 0 1
+    self.horror `shouldReturn` 1
+    (length . gameQuestion <$> getGame) `shouldReturn` 0
+
   it "forgets a record only for the specified investigator" . gameTest $ \self -> do
     other <- addInvestigator Investigators.rolandBanks
     let key = HomebrewCampaignLogKey "agesUnwound.ReturnedToArkhamLate"
@@ -72,7 +81,7 @@ spec = describe "Investigator.Runner" do
     self.location `shouldReturn` Just (toId from)
     self.horror `shouldReturn` 0
 
-  it "still runs a parked move batch whose movement is still in flight" . gameTest $ \self -> do
+  it "automatically resolves a lone forced ability in a parked move batch" . gameTest $ \self -> do
     realAgenda Agendas.allIsOne
     (from, dest) <- testConnectedLocations id id
     self `moveTo` from
@@ -81,12 +90,11 @@ spec = describe "Investigator.Runner" do
 
     run $ WhenCanMove (toId self) [ResolveMovement (toId self), afterMoves self from dest movement]
 
-    -- The exact mirror of the case above: the move resolves and All is One's
-    -- Forced is offered. Asserted on the raised prompt rather than on horror so
-    -- the test does not depend on how assignHorror is answered.
+    -- The exact mirror of the case above: the move resolves, then All is One's
+    -- lone forced ability and its single horror assignment resolve automatically.
     self.location `shouldReturn` Just (toId dest)
-    shownQuestion <- show . gameQuestion <$> getGame
-    shownQuestion `shouldContain` "02312"
+    self.horror `shouldReturn` 1
+    (length . gameQuestion <$> getGame) `shouldReturn` (0 :: Int)
  where
   afterMoves self from dest movement =
     CheckWindows

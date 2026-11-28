@@ -507,21 +507,22 @@ out) and the set still survives its sources leaving play. #5743
 initiationsAsk
   :: PlayerId -> InvestigatorId -> [Window] -> [(Ability, [Window], [Message])] -> Message
 initiationsAsk player iid windows pending =
-  asWindowChoose windows
-    $ chooseOne
-      player
-      -- the continuation rides MoveWithSkillTest so the chosen initiation resolves in
-      -- FULL -- nested skill test included -- before the next round is offered
-      [ AbilityLabel
-          iid
-          (aimed ability ws)
-          ws
-          []
-          [MoveWithSkillTest (ResolveWindowInitiations iid windows pending)]
-      | ability <- nub [ability | (ability, _, _) <- pending]
-      , let ws = concat [ws' | (ability', ws', _) <- pending, ability' == ability]
-      ]
+  case choices of
+    [_] -> chooseOrRunOne player choices
+    _ -> asWindowChoose windows $ chooseOne player choices
  where
+  choices =
+    -- the continuation rides MoveWithSkillTest so the chosen initiation resolves in
+    -- FULL -- nested skill test included -- before the next round is offered
+    [ AbilityLabel
+        iid
+        (aimed ability ws)
+        ws
+        []
+        [MoveWithSkillTest (ResolveWindowInitiations iid windows pending)]
+    | ability <- nub [ability | (ability, _, _) <- pending]
+    , let ws = concat [ws' | (ability', ws', _) <- pending, ability' == ability]
+    ]
   aimed ability ws
     | isNothing (abilityTarget ability)
     , singleEvent ws || abilityHighlightFromWindow ability

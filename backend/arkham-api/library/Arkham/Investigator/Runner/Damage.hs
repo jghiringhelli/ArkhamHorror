@@ -1075,12 +1075,14 @@ assignDamageDivided a@InvestigatorAttrs {..} iid source strategy matcher health 
     restrictToCurrent HorrorToken AssetRemainingSanity horrorTargets sanityDamageMessages
   -- Wrap with the damage source so the client highlights it as the actor
   -- (yellow source-highlight), and with the totals label for the token counts.
-  push
-    $ questionWithSource source player
-    $ QuestionLabel (assignDamageTotalsLabel health sanity) []
-    $ ChooseOne
-    $ healthDamageMessages'
-    <> sanityDamageMessages'
+  let assignmentChoices = healthDamageMessages' <> sanityDamageMessages'
+  case assignmentChoices of
+    [choice] -> push $ chooseOrRunOne player [choice]
+    _ ->
+      push
+        $ questionWithSource source player
+        $ QuestionLabel (assignDamageTotalsLabel health sanity) []
+        $ ChooseOne assignmentChoices
   pure a
 
 handleDrivenInsane a@InvestigatorAttrs {..} iid = do
