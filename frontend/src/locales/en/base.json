@@ -353,6 +353,8 @@
   },
   "game": {
     "areYouSureUndoScenario": "Are you sure you wish to undo to the beginning of the scenario?",
+    "confirmDrawCard": "Draw a card from your deck?",
+    "confirmTakeResource": "Take a resource?",
     "playabilityChecks": "Playability Checks",
     "unableToDownloadExport": "Unable to download export",
     "shortcutSection": {

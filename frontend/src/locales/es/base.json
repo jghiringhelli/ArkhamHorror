@@ -44,7 +44,13 @@
 
   "Yes": "Sí",
   "No": "No",
+  "yes": "Sí",
+  "no": "No",
 
+  "game": {
+    "confirmDrawCard": "¿Robar una carta de tu mazo?",
+    "confirmTakeResource": "¿Tomar un recurso?"
+  },
 
   "Parley": "Negociar",
   "Resign": "Desistir",

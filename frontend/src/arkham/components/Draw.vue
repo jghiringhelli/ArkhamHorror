@@ -6,6 +6,7 @@ import * as Arkham from '@/arkham/types/Investigator'
 import * as ArkhamGame from '@/arkham/types/Game';
 import type { Game } from '@/arkham/types/Game'
 import {computed, ref, watch} from 'vue'
+import Prompt from '@/components/Prompt.vue'
 import { imgsrc } from '@/arkham/helpers';
 import { cardImage } from '@/arkham/cardImages';
 import { useI18n } from 'vue-i18n';
@@ -32,6 +33,7 @@ const emit = defineEmits(['choose'])
 const investigatorId = computed(() => props.investigator.id)
 const debug = useDebug()
 const debuggingDeck = ref(false)
+const confirmingDraw = ref(false)
 const cardStore = useCardStore()
 
 const id = computed(() => props.investigator.id)
@@ -115,6 +117,21 @@ const drawCardsAction = computed(() => {
       return false
     });
 })
+
+function requestDraw() {
+  if (drawCardsAction.value === -1) return
+  confirmingDraw.value = true
+}
+
+function confirmDraw() {
+  confirmingDraw.value = false
+  const action = drawCardsAction.value
+  if (action !== -1) emit('choose', action)
+}
+
+function cancelDraw() {
+  confirmingDraw.value = false
+}
 
 function isDiscardChoice(c: Message) {
   if (c.tag === "TargetLabel") {
@@ -390,7 +407,7 @@ watch(choices, async (newChoices) => {
         :data-customizations="topOfDeckCard ? JSON.stringify(topOfDeckCard.customizations) : undefined"
         :data-chained="topOfDeckCard?.chained || undefined"
         width="150px"
-        @click="emit('choose', drawCardsAction)"
+        @click="requestDraw"
       />
       <span class="deck-size">{{investigator.deckSize}}</span>
       <div
@@ -416,6 +433,12 @@ watch(choices, async (newChoices) => {
       <DeckDebugWindow v-if="debuggingDeck" :game="game" :investigator="investigator" @close="debuggingDeck = false" />
     </template>
   </div>
+  <Prompt
+    v-if="confirmingDraw"
+    prompt="$game.confirmDrawCard"
+    :yes="confirmDraw"
+    :no="cancelDraw"
+  />
 </template>
 
 <style scoped>

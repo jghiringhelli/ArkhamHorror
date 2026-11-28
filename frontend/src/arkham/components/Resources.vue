@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import Prompt from '@/components/Prompt.vue'
 import { TokenType } from '@/arkham/types/Token'
 import { keyToId } from '@/arkham/types/Key'
 import PoolItem from '@/arkham/components/PoolItem.vue'
@@ -40,6 +41,7 @@ export interface Props {
 
 const props = withDefaults(defineProps<Props>(), { portrait: false })
 const debug = useDebug()
+const confirmingResource = ref(false)
 
 const iid = computed(() => props.investigator.id)
 const choose = (index: number) => emits('choose', index)
@@ -67,6 +69,21 @@ const takeResourceAction = computed(() =>
     && c.component.investigatorId === iid.value
   )
 )
+
+function requestTakeResource() {
+  if (takeResourceAction.value === -1) return
+  confirmingResource.value = true
+}
+
+function confirmTakeResource() {
+  confirmingResource.value = false
+  const action = takeResourceAction.value
+  if (action !== -1) choose(action)
+}
+
+function cancelTakeResource() {
+  confirmingResource.value = false
+}
 
 const spendCluesAction = computed(() =>
   props.choices.findIndex((c) =>
@@ -186,7 +203,7 @@ const hiGradId = computed(() => `auxMagentaHi-${iid.value}`)
         type="resource"
         :amount="resources"
         :class="{ 'resource--can-take': takeResourceAction !== -1 }"
-        @choose="$emit('choose', takeResourceAction)"
+        @choose="requestTakeResource"
       />
       <span
         v-if="resourcesProhibited"
@@ -328,6 +345,12 @@ const hiGradId = computed(() => `auxMagentaHi-${iid.value}`)
     </template>
 
     <TokenPool :tokens="otherTokens" :target="{ tag: 'InvestigatorTarget', contents: iid }" />
+    <Prompt
+      v-if="confirmingResource"
+      prompt="$game.confirmTakeResource"
+      :yes="confirmTakeResource"
+      :no="cancelTakeResource"
+    />
   </div>
 </template>
 
