@@ -80,8 +80,8 @@ onBeforeUnmount(teardown)
 </template>
 
 <style scoped>
-/* Mirrors the flex behaviour of the element this wraps, so slotting it in does
-   not disturb the surrounding layout. */
+/* Fill the assigned grid/flex area so percentage-sized canvases and their
+   captured subtree share the board's dimensions. */
 .rain-host {
   position: relative;
   /* Own stacking context, so the output canvas's z-index stays internal and can
@@ -89,6 +89,8 @@ onBeforeUnmount(teardown)
   isolation: isolate;
   display: flex;
   flex: 1;
+  width: 100%;
+  height: 100%;
   min-width: 0;
   min-height: 0;
 }

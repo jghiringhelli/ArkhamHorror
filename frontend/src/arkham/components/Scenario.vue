@@ -1768,6 +1768,7 @@ const locations = computed(() => Object.values(props.game.locations).
   filter((a) => (a.placement === null || a.placement.tag === 'AttachedToLocation') && a.label !== "cosmos"))
 watch(locations, updateScrollMargins, { flush: 'post' })
 watch(layoutPadding, updateScrollMargins, { flush: 'post' })
+watch(showRain, updateScrollMargins, { flush: 'post' })
 watch([locations, rotationSteps, locationsZoom], updateCellDimensions, { flush: 'post' })
 const cosmicEmissaryLayoutSignature = computed(() => {
   if (props.scenario.id !== 'c10651') return ''
